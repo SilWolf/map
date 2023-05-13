@@ -149,7 +149,24 @@
 		],
 		"mapConnections": [
 			{
-				"points": ["asgard-of-midgard", "city-of-wheel"]
+				"level": 0,
+				"points": ["asgard-of-midgard", "zite", "city-of-wheel"]
+			},
+			{
+				"level": 0,
+				"points": ["city-of-wheel", "za-ura"]
+			},
+			{
+				"level": 0,
+				"points": ["city-of-wheel", "south-village", "cana"]
+			},
+			{
+				"level": 0,
+				"points": ["south-mine", [3488, 3070], "cana"]
+			},
+			{
+				"level": 0,
+				"points": ["city-of-wheel", [2777, 2856], [2841, 2589], "alfheimr"]
 			}
 		]
 	}

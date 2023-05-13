@@ -158,9 +158,14 @@ type LabelProps = HTMLAttributes<HTMLDivElement> & {
 type WithTooltipProps<T> = T & {
 	rectBounds: [[number, number], [number, number]];
 	anchorCoord: [number, number];
+	anchorXY: { x: number; y: number };
 };
 
 type LeafletMapObject = WithTooltipProps<LabelProps>;
+
+type LeafletMapConnection = {
+	points: [number, number][];
+};
 
 type TransportProps = {
 	points: [number, number][];
@@ -217,11 +222,21 @@ function App() {
 			.then(setMapInfo);
 	}, []);
 
-	const [leafletMapObjects, leafletMapObjectEntries] = useMemo<
-		[LeafletMapObject[], [string, LeafletMapObject[]][]]
+	const [
+		leafletMapObjects,
+		leafletMapObjectEntries,
+		leafletMapConnections,
+		leafletMapConnectionEntries,
+	] = useMemo<
+		[
+			LeafletMapObject[],
+			[string, LeafletMapObject[]][],
+			LeafletMapConnection[],
+			[string, LeafletMapConnection[]][]
+		]
 	>(() => {
 		if (!mapInfo) {
-			return [[], []];
+			return [[], [], [], []];
 		}
 
 		const refinedMapObjects = mapInfo.data.mapObjects.map(
@@ -238,6 +253,19 @@ function App() {
 							mapObject.coord.areaEndY
 						),
 					],
+					anchorXY: mapObject.anchorCoord
+						? {
+								x: mapObject.anchorCoord.x,
+								y: mapObject.anchorCoord.y,
+						  }
+						: {
+								x: Math.floor(
+									(mapObject.coord.areaStartX + mapObject.coord.areaEndX) / 2
+								),
+								y: Math.floor(
+									(mapObject.coord.areaStartY + mapObject.coord.areaEndY) / 2
+								),
+						  },
 					anchorCoord: mapObject.anchorCoord
 						? convertLocationXYToMapCoord(
 								mapObject.anchorCoord.x,
@@ -253,14 +281,14 @@ function App() {
 						  ),
 				} as LeafletMapObject)
 		);
-		const result: Record<number, LeafletMapObject[]> = {};
+		const refinedMapObjectLevelMap: Record<number, LeafletMapObject[]> = {};
 
 		for (const mapObject of refinedMapObjects) {
-			if (!result[mapObject.level]) {
-				result[mapObject.level] = [];
+			if (!refinedMapObjectLevelMap[mapObject.level]) {
+				refinedMapObjectLevelMap[mapObject.level] = [];
 			}
 			try {
-				result[mapObject.level].push(mapObject);
+				refinedMapObjectLevelMap[mapObject.level].push(mapObject);
 			} catch (e) {
 				console.error(
 					`${mapObject.title} (level = ${mapObject.level}) 轉化失敗!`,
@@ -269,7 +297,50 @@ function App() {
 			}
 		}
 
-		return [refinedMapObjects, Object.entries(result)];
+		const refinedMapConnections = mapInfo.data.mapConnections.map((item) => {
+			const points: [number, number][] = [];
+
+			for (let i = 0; i < item.points.length; i++) {
+				if (typeof item.points[i] !== 'string') {
+					points.push(item.points[i] as [number, number]);
+				}
+
+				if (typeof item.points[i] === 'string') {
+					const mapObject = refinedMapObjects.find(
+						({ id }) => id === (item.points[i] as string)
+					);
+
+					if (mapObject) {
+						points.push([mapObject.anchorXY.x, mapObject.anchorXY.y]);
+					}
+				}
+			}
+
+			return {
+				...item,
+				points,
+			};
+		});
+
+		const refinedMapConnectionLevelMap: Record<number, LeafletMapConnection[]> =
+			{};
+		for (const mapConnection of refinedMapConnections) {
+			if (!refinedMapConnectionLevelMap[mapConnection.level]) {
+				refinedMapConnectionLevelMap[mapConnection.level] = [];
+			}
+			try {
+				refinedMapConnectionLevelMap[mapConnection.level].push(mapConnection);
+			} catch (e) {
+				console.error('轉化失敗!', e);
+			}
+		}
+
+		return [
+			refinedMapObjects,
+			Object.entries(refinedMapObjectLevelMap),
+			refinedMapConnections,
+			Object.entries(refinedMapConnectionLevelMap),
+		];
 	}, [mapInfo]);
 
 	const handleClickMapObject = useCallback(
@@ -344,7 +415,7 @@ function App() {
 			{leafletMapObjectEntries.map(([level, leafletMapObjects], i) => (
 				<ExtendedLayerGroup level={parseInt(level)} key={i}>
 					{leafletMapObjects.map(
-						({ rectBounds, anchorCoord, id, ...mapObject }) => (
+						({ rectBounds, anchorCoord, id, anchorXY, ...mapObject }) => (
 							<React.Fragment key={id}>
 								<Rectangle
 									bounds={rectBounds}
@@ -382,27 +453,30 @@ function App() {
 				</ExtendedLayerGroup>
 			))}
 
-			<SVGOverlay
-				bounds={[
-					[-320, 320],
-					[-5780, 8512],
-				]}
-			>
-				<svg viewBox='0 0 8192 5460'>
-					<NaturalCurve
-						data={[
-							[3438, 3022],
-							[3469, 3089],
-							[3513, 3161],
+			{leafletMapConnectionEntries.map(([level, leafletMapConnections], i) => (
+				<ExtendedLayerGroup level={parseInt(level)} key={i}>
+					<SVGOverlay
+						bounds={[
+							[-320, 320],
+							[-5780, 8512],
 						]}
-						strokeWidth={4}
-						strokeLinecap='round'
-						strokeDasharray='1, 8'
-						stroke='rgba(255, 255, 255, 1)'
-						showPoints={false}
-					/>
-				</svg>
-			</SVGOverlay>
+					>
+						<svg viewBox='0 0 8192 5460'>
+							{leafletMapConnections.map(({ points }, i) => (
+								<NaturalCurve
+									key={i}
+									data={points}
+									strokeWidth={4}
+									strokeLinecap='round'
+									strokeDasharray='1, 8'
+									stroke='rgba(255, 255, 255, 1)'
+									showPoints={false}
+								/>
+							))}
+						</svg>
+					</SVGOverlay>
+				</ExtendedLayerGroup>
+			))}
 
 			<MapContainerEventHandler />
 		</MapContainer>
