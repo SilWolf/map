@@ -15,6 +15,7 @@ import {
 	Marker,
 	Popup,
 	Rectangle,
+	SVGOverlay,
 	TileLayer,
 	Tooltip,
 	useMap,
@@ -22,7 +23,7 @@ import {
 } from 'react-leaflet';
 import { NaturalCurve } from 'react-svg-curve';
 import { useKeyPressEvent } from 'react-use';
-import { MapInfo, MapInfoObjectCategory, MapObject } from './types/Map.type';
+import { MapInfo, MapObject } from './types/Map.type';
 import React from 'react';
 
 const convertLocationXYToMapCoord = (
@@ -70,25 +71,6 @@ const MapObjectLabel = ({
 		>
 			<p className={titleClassName}>{title}</p>
 			<p className={subtitleClassName}>{subtitle}</p>
-		</div>
-	);
-};
-
-const MinorLandmarkLabel = ({
-	title,
-	subtitle,
-	showDot,
-	...divProps
-}: LabelProps) => {
-	return (
-		<div
-			className='map-label text-center whitespace-nowrap opacity-70'
-			{...divProps}
-		>
-			<p className='text-[28px] leading-[20px] text-white scale-x-[.92]'>
-				{title}
-			</p>
-			<p className='text-[14px] text-white scale-x-[.88]'>{subtitle}</p>
 		</div>
 	);
 };
@@ -169,6 +151,7 @@ type LabelProps = HTMLAttributes<HTMLDivElement> & {
 	title: string;
 	subtitle?: string;
 	showDot?: boolean;
+	level: number;
 	importance?: number;
 };
 
@@ -194,7 +177,7 @@ const ExtendedLayerGroup = ({ level, ...props }: ExtendedLayerGroupProps) => {
 		setZoom(map.getZoom());
 	});
 
-	if (zoom < level - 1 || zoom > level + 1) {
+	if (zoom < level || zoom > level + 2) {
 		return null;
 	}
 
@@ -234,19 +217,16 @@ function App() {
 			.then(setMapInfo);
 	}, []);
 
-	const leafletMapObjects = useMemo<Record<number, LeafletMapObject[]>>(() => {
+	const [leafletMapObjects, leafletMapObjectEntries] = useMemo<
+		[LeafletMapObject[], [string, LeafletMapObject[]][]]
+	>(() => {
 		if (!mapInfo) {
-			return {};
+			return [[], []];
 		}
 
-		const result: Record<number, LeafletMapObject[]> = {};
-
-		for (const mapObject of mapInfo.data.mapObjects) {
-			if (!result[mapObject.level]) {
-				result[mapObject.level] = [];
-			}
-			try {
-				result[mapObject.level].push({
+		const refinedMapObjects = mapInfo.data.mapObjects.map(
+			(mapObject) =>
+				({
 					...mapObject,
 					rectBounds: [
 						convertLocationXYToMapCoord(
@@ -271,7 +251,16 @@ function App() {
 									(mapObject.coord.areaStartY + mapObject.coord.areaEndY) / 2
 								)
 						  ),
-				});
+				} as LeafletMapObject)
+		);
+		const result: Record<number, LeafletMapObject[]> = {};
+
+		for (const mapObject of refinedMapObjects) {
+			if (!result[mapObject.level]) {
+				result[mapObject.level] = [];
+			}
+			try {
+				result[mapObject.level].push(mapObject);
 			} catch (e) {
 				console.error(
 					`${mapObject.title} (level = ${mapObject.level}) 轉化失敗!`,
@@ -280,44 +269,32 @@ function App() {
 			}
 		}
 
-		return result;
+		return [refinedMapObjects, Object.entries(result)];
 	}, [mapInfo]);
-
-	const leafletMapObjectEntries = useMemo(
-		() => Object.entries(leafletMapObjects),
-		[leafletMapObjects]
-	);
 
 	const handleClickMapObject = useCallback(
 		(e: MouseEvent<HTMLDivElement> | LeafletMouseEvent) => {
 			try {
 				if ((e as LeafletMouseEvent).originalEvent !== undefined) {
-					const [, category, index] = (
+					const [, id] = (
 						(e as LeafletMouseEvent).originalEvent.target as HTMLElement
 					)
 						.getAttribute('class')
 						?.split(' ')
 						.find((className) => className.startsWith('mapObject'))
-						?.split('-') as [unknown, MapInfoObjectCategory, string];
+						?.split('|') as [unknown, string];
 
-					const mapObject =
-						leafletMapObjects[parseInt(category)][parseInt(index)];
+					const mapObject = leafletMapObjects.find((item) => item.id === id);
 
 					console.log(mapObject);
 				} else {
 					(e as MouseEvent<HTMLDivElement>).stopPropagation();
 
-					const category = (
+					const id = (
 						e as MouseEvent<HTMLDivElement>
-					).currentTarget.getAttribute(
-						'data-category'
-					) as MapInfoObjectCategory;
-					const index = (
-						e as MouseEvent<HTMLDivElement>
-					).currentTarget.getAttribute('data-index') as string;
+					).currentTarget.getAttribute('data-id') as string;
 
-					const mapObject =
-						leafletMapObjects[parseInt(category)][parseInt(index)];
+					const mapObject = leafletMapObjects.find((item) => item.id === id);
 
 					console.log(mapObject);
 				}
@@ -336,28 +313,6 @@ function App() {
 	);
 
 	return (
-		// <div className='relative'>
-		// 	<img
-		// 		src='./images/map.png'
-		// 		className='!max-w-none w-[8192px] h-[5460px]'
-		// 		onClick={handleClickMap}
-		// 	/>
-		// 	{locations.map((location) => (【
-		// 		<MinorLandmarkLabel {...location} />
-		// 	))}
-		// 	{sublocations.map((sublocation) => (
-		// 		<SubMinorLandmarkLabel {...sublocation} />
-		// 	))}
-
-		// 	{transportLineMode === 0 &&
-		// 		transports.map((transport) => <TransportLine {...transport} />)}
-
-		// 	{transportLineMode === 1 &&
-		// 		transports.map((transport) => (
-		// 			<TransportLineWithoutAP {...transport} />
-		// 		))}
-		// </div>
-
 		<MapContainer
 			className='w-screen h-screen'
 			maxBounds={[
@@ -389,13 +344,13 @@ function App() {
 			{leafletMapObjectEntries.map(([level, leafletMapObjects], i) => (
 				<ExtendedLayerGroup level={parseInt(level)} key={i}>
 					{leafletMapObjects.map(
-						({ rectBounds, anchorCoord, ...mapObject }, mapObjectIndex) => (
-							<React.Fragment key={mapObjectIndex}>
+						({ rectBounds, anchorCoord, id, ...mapObject }) => (
+							<React.Fragment key={id}>
 								<Rectangle
 									bounds={rectBounds}
 									pathOptions={{
 										color: 'transparent',
-										className: `mapObject-${level}-${mapObjectIndex}`,
+										className: `mapObject|${id}`,
 									}}
 									eventHandlers={mapObjectEventFns}
 									interactive
@@ -416,8 +371,7 @@ function App() {
 									>
 										<MapObjectLabel
 											{...mapObject}
-											data-category={level}
-											data-index={mapObjectIndex}
+											data-id={id}
 											onClick={handleClickMapObject}
 										/>
 									</Tooltip>
@@ -427,6 +381,28 @@ function App() {
 					)}
 				</ExtendedLayerGroup>
 			))}
+
+			<SVGOverlay
+				bounds={[
+					[-320, 320],
+					[-5780, 8512],
+				]}
+			>
+				<svg viewBox='0 0 8192 5460'>
+					<NaturalCurve
+						data={[
+							[3438, 3022],
+							[3469, 3089],
+							[3513, 3161],
+						]}
+						strokeWidth={4}
+						strokeLinecap='round'
+						strokeDasharray='1, 8'
+						stroke='rgba(255, 255, 255, 1)'
+						showPoints={false}
+					/>
+				</svg>
+			</SVGOverlay>
 
 			<MapContainerEventHandler />
 		</MapContainer>

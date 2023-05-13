@@ -17,6 +17,7 @@
 					"x": 4000,
 					"y": 2890
 				},
+				"id": "asgard-of-midgard",
 				"title": "央城",
 				"subtitle": "(Asgard of Midgard)",
 				"level": 0
@@ -32,6 +33,7 @@
 					"x": 3400,
 					"y": 3013
 				},
+				"id": "cana",
 				"title": "迦拿",
 				"subtitle": "(Cana)",
 				"level": 0
@@ -47,6 +49,7 @@
 					"x": 3123,
 					"y": 2920
 				},
+				"id": "city-of-wheel",
 				"title": "輾土城",
 				"subtitle": "(City of Wheel)",
 				"level": 0
@@ -62,6 +65,7 @@
 					"x": 3309,
 					"y": 2385
 				},
+				"id": "alfheimr",
 				"title": "亞爾夫海姆",
 				"subtitle": "(Álfheimr)",
 				"level": 0
@@ -77,6 +81,7 @@
 					"x": 3082,
 					"y": 2746
 				},
+				"id": "za-ura",
 				"title": "賽吾爾城",
 				"subtitle": "(Za' Ura)",
 				"level": 0
@@ -92,6 +97,7 @@
 					"x": 3591,
 					"y": 2750
 				},
+				"id": "zite",
 				"title": "慈特",
 				"subtitle": "(Zite)",
 				"level": 0,
@@ -104,6 +110,7 @@
 					"areaEndX": 3174,
 					"areaEndY": 3022
 				},
+				"id": "south-village",
 				"title": "南嶺農村",
 				"subtitle": "",
 				"level": 0,
@@ -120,6 +127,7 @@
 					"x": 3304,
 					"y": 2936
 				},
+				"id": "grave-tower",
 				"title": "眠塔",
 				"subtitle": "(Grave Tower)",
 				"level": 0,
@@ -132,10 +140,16 @@
 					"areaEndX": 3533,
 					"areaEndY": 3200
 				},
+				"id": "south-mine",
 				"title": "礦坑",
 				"subtitle": "",
 				"level": 0,
 				"importance": -1
+			}
+		],
+		"mapConnections": [
+			{
+				"points": ["asgard-of-midgard", "city-of-wheel"]
 			}
 		]
 	}
