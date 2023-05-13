@@ -1,6 +1,4 @@
-import { CRS } from 'leaflet';
 import { useCallback, useState } from 'react';
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import { NaturalCurve } from 'react-svg-curve';
 import { useKeyPressEvent } from 'react-use';
 
@@ -191,7 +189,7 @@ const transports: TransportProps[] = [
 	},
 ];
 
-function App() {
+function AppForPrint() {
 	const handleClickMap = (e: React.MouseEvent) => {
 		alert(`x: ${Math.floor(e.pageX)}, y: ${Math.floor(e.pageY)},`);
 	};
@@ -205,60 +203,28 @@ function App() {
 	useKeyPressEvent('1', handleChangeTransportLineMode);
 
 	return (
-		// <div className='relative'>
-		// 	<img
-		// 		src='./images/map.png'
-		// 		className='!max-w-none w-[8192px] h-[5460px]'
-		// 		onClick={handleClickMap}
-		// 	/>
-		// 	{locations.map((location) => (【
-		// 		<LocationLabel {...location} />
-		// 	))}
-		// 	{sublocations.map((sublocation) => (
-		// 		<SublocationLabel {...sublocation} />
-		// 	))}
-
-		// 	{transportLineMode === 0 &&
-		// 		transports.map((transport) => <TransportLine {...transport} />)}
-
-		// 	{transportLineMode === 1 &&
-		// 		transports.map((transport) => (
-		// 			<TransportLineWithoutAP {...transport} />
-		// 		))}
-		// </div>
-
-		<MapContainer
-			className='w-screen h-screen'
-			maxBounds={[
-				[-320, 320],
-				[-5780, 8512],
-			]}
-			center={[-2000, 4000]}
-			minZoom={-3}
-			maxZoom={0}
-			zoom={0}
-			scrollWheelZoom={false}
-			crs={CRS.Simple}
-		>
-			<TileLayer
-				attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-				url='/images/map-tiles/row-{y}-column-{x}.png'
-				maxNativeZoom={0}
-				minNativeZoom={0}
-				minZoom={-99}
-				bounds={[
-					[-320, 320],
-					[-5780, 8512],
-				]}
-				tileSize={320}
+		<div className='relative'>
+			<img
+				src='./images/map.png'
+				className='!max-w-none w-[8192px] h-[5460px]'
+				onClick={handleClickMap}
 			/>
-			<Marker position={[51.505, -0.09]}>
-				<Popup>
-					A pretty CSS3 popup. <br /> Easily customizable.
-				</Popup>
-			</Marker>
-		</MapContainer>
+			{locations.map((location) => (
+				<LocationLabel {...location} />
+			))}
+			{sublocations.map((sublocation) => (
+				<SublocationLabel {...sublocation} />
+			))}
+
+			{transportLineMode === 0 &&
+				transports.map((transport) => <TransportLine {...transport} />)}
+
+			{transportLineMode === 1 &&
+				transports.map((transport) => (
+					<TransportLineWithoutAP {...transport} />
+				))}
+		</div>
 	);
 }
 
-export default App;
+export default AppForPrint;
