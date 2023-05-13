@@ -9,17 +9,21 @@ import {
 } from 'react';
 import {
 	CircleMarker,
+	LayerGroup,
+	LayerGroupProps,
 	MapContainer,
 	Marker,
 	Popup,
 	Rectangle,
 	TileLayer,
 	Tooltip,
+	useMap,
 	useMapEvent,
 } from 'react-leaflet';
 import { NaturalCurve } from 'react-svg-curve';
 import { useKeyPressEvent } from 'react-use';
-import { MapInfo, MapInfoObjectCategory } from './types/Map.type';
+import { MapInfo, MapInfoObjectCategory, MapObject } from './types/Map.type';
+import React from 'react';
 
 const convertLocationXYToMapCoord = (
 	x: number,
@@ -35,28 +39,52 @@ const ZoneLabel = () => {
 	);
 };
 
-const LocationLabel = ({
+const MapObjectLabel = ({
+	title,
+	subtitle,
+	showDot,
+	importance = 0,
+	...divProps
+}: LabelProps) => {
+	const [containerClassName, titleClassName, subtitleClassName] =
+		useMemo(() => {
+			if (importance < 0) {
+				return [
+					'text-white opacity-70',
+					'text-[28px] leading-[20px] scale-x-[.92]',
+					'text-[14px] scale-x-[.88]',
+				];
+			}
+
+			return [
+				'text-white',
+				'text-[40px] leading-[28px] scale-x-[.92]',
+				'text-[20px] scale-x-[.88]',
+			];
+		}, [importance]);
+
+	return (
+		<div
+			className={`map-label text-center whitespace-nowrap ${containerClassName}`}
+			{...divProps}
+		>
+			<p className={titleClassName}>{title}</p>
+			<p className={subtitleClassName}>{subtitle}</p>
+		</div>
+	);
+};
+
+const MinorLandmarkLabel = ({
 	title,
 	subtitle,
 	showDot,
 	...divProps
 }: LabelProps) => {
 	return (
-		<div className='map-label text-center whitespace-nowrap' {...divProps}>
-			<p className='text-[40px] leading-[28px] text-white scale-x-[.92]'>
-				{title}
-			</p>
-			<p className='text-[20px] text-white scale-x-[.88]'>{subtitle}</p>
-		</div>
-	);
-};
-
-const SublocationLabel = ({ title, subtitle, showDot }: LabelProps) => {
-	return (
-		<div className='map-label text-center whitespace-nowrap opacity-70'>
-			{showDot && (
-				<div className='w-3 h-3 rounded-full bg-white border-2 border-black mx-auto mb-2'></div>
-			)}
+		<div
+			className='map-label text-center whitespace-nowrap opacity-70'
+			{...divProps}
+		>
 			<p className='text-[28px] leading-[20px] text-white scale-x-[.92]'>
 				{title}
 			</p>
@@ -141,11 +169,12 @@ type LabelProps = HTMLAttributes<HTMLDivElement> & {
 	title: string;
 	subtitle?: string;
 	showDot?: boolean;
+	importance?: number;
 };
 
 type WithTooltipProps<T> = T & {
 	rectBounds: [[number, number], [number, number]];
-	tooltipOffset: [number, number];
+	anchorCoord: [number, number];
 };
 
 type LeafletMapObject = WithTooltipProps<LabelProps>;
@@ -153,6 +182,23 @@ type LeafletMapObject = WithTooltipProps<LabelProps>;
 type TransportProps = {
 	points: [number, number][];
 	apCost: number;
+};
+
+type ExtendedLayerGroupProps = LayerGroupProps & {
+	level: number;
+};
+
+const ExtendedLayerGroup = ({ level, ...props }: ExtendedLayerGroupProps) => {
+	const [zoom, setZoom] = useState<number>(0);
+	const map = useMapEvent('zoomend', () => {
+		setZoom(map.getZoom());
+	});
+
+	if (zoom < level - 1 || zoom > level + 1) {
+		return null;
+	}
+
+	return <LayerGroup {...props} />;
 };
 
 const MapContainerEventHandler = () => {
@@ -188,43 +234,59 @@ function App() {
 			.then(setMapInfo);
 	}, []);
 
-	const { majorLandmarks } = useMemo<{
-		majorLandmarks: LeafletMapObject[];
-	}>(() => {
+	const leafletMapObjects = useMemo<Record<number, LeafletMapObject[]>>(() => {
 		if (!mapInfo) {
-			return {
-				majorLandmarks: [],
-			};
+			return {};
 		}
 
-		try {
-			return {
-				majorLandmarks: mapInfo.data.mapObject.majorLandmarks.map(
-					({ coord, ...item }) => ({
-						...item,
-						rectBounds: [
-							convertLocationXYToMapCoord(coord.areaStartX, coord.areaStartY),
-							convertLocationXYToMapCoord(coord.areaEndX, coord.areaEndY),
-						],
-						tooltipOffset: [
-							0,
-							Math.max(
-								-14,
-								Math.floor(((coord.areaEndY - coord.areaStartY) / 2) * 0.8)
-							),
-						],
-					})
-				),
-			};
-		} catch (e) {
-			console.log(e);
-			console.error('發生了問題！請通知月月修復處理！');
+		const result: Record<number, LeafletMapObject[]> = {};
+
+		for (const mapObject of mapInfo.data.mapObjects) {
+			if (!result[mapObject.level]) {
+				result[mapObject.level] = [];
+			}
+			try {
+				result[mapObject.level].push({
+					...mapObject,
+					rectBounds: [
+						convertLocationXYToMapCoord(
+							mapObject.coord.areaStartX,
+							mapObject.coord.areaStartY
+						),
+						convertLocationXYToMapCoord(
+							mapObject.coord.areaEndX,
+							mapObject.coord.areaEndY
+						),
+					],
+					anchorCoord: mapObject.anchorCoord
+						? convertLocationXYToMapCoord(
+								mapObject.anchorCoord.x,
+								mapObject.anchorCoord.y
+						  )
+						: convertLocationXYToMapCoord(
+								Math.floor(
+									(mapObject.coord.areaStartX + mapObject.coord.areaEndX) / 2
+								),
+								Math.floor(
+									(mapObject.coord.areaStartY + mapObject.coord.areaEndY) / 2
+								)
+						  ),
+				});
+			} catch (e) {
+				console.error(
+					`${mapObject.title} (level = ${mapObject.level}) 轉化失敗!`,
+					e
+				);
+			}
 		}
 
-		return {
-			majorLandmarks: [],
-		};
+		return result;
 	}, [mapInfo]);
+
+	const leafletMapObjectEntries = useMemo(
+		() => Object.entries(leafletMapObjects),
+		[leafletMapObjects]
+	);
 
 	const handleClickMapObject = useCallback(
 		(e: MouseEvent<HTMLDivElement> | LeafletMouseEvent) => {
@@ -238,7 +300,8 @@ function App() {
 						.find((className) => className.startsWith('mapObject'))
 						?.split('-') as [unknown, MapInfoObjectCategory, string];
 
-					const mapObject = mapInfo?.data.mapObject[category][parseInt(index)];
+					const mapObject =
+						leafletMapObjects[parseInt(category)][parseInt(index)];
 
 					console.log(mapObject);
 				} else {
@@ -253,7 +316,8 @@ function App() {
 						e as MouseEvent<HTMLDivElement>
 					).currentTarget.getAttribute('data-index') as string;
 
-					const mapObject = mapInfo?.data.mapObject[category][parseInt(index)];
+					const mapObject =
+						leafletMapObjects[parseInt(category)][parseInt(index)];
 
 					console.log(mapObject);
 				}
@@ -261,7 +325,7 @@ function App() {
 				console.error(e);
 			}
 		},
-		[mapInfo]
+		[leafletMapObjects]
 	);
 
 	const mapObjectEventFns = useMemo<LeafletEventHandlerFnMap>(
@@ -279,10 +343,10 @@ function App() {
 		// 		onClick={handleClickMap}
 		// 	/>
 		// 	{locations.map((location) => (【
-		// 		<LocationLabel {...location} />
+		// 		<MinorLandmarkLabel {...location} />
 		// 	))}
 		// 	{sublocations.map((sublocation) => (
-		// 		<SublocationLabel {...sublocation} />
+		// 		<SubMinorLandmarkLabel {...sublocation} />
 		// 	))}
 
 		// 	{transportLineMode === 0 &&
@@ -304,7 +368,6 @@ function App() {
 			minZoom={-3}
 			maxZoom={2}
 			zoom={0}
-			scrollWheelZoom={false}
 			crs={CRS.Simple}
 		>
 			<TileLayer
@@ -323,33 +386,46 @@ function App() {
 				<Popup>Hello world</Popup>
 			</Marker> */}
 
-			{majorLandmarks.map(({ rectBounds, tooltipOffset, ...location }, i) => (
-				<Rectangle
-					key={i}
-					bounds={rectBounds}
-					pathOptions={{
-						color: 'black',
-						className: `mapObject-majorLandmarks-${i}`,
-					}}
-					eventHandlers={mapObjectEventFns}
-					interactive
-				>
-					<Tooltip
-						direction='bottom'
-						offset={tooltipOffset}
-						className={`map-primary-label mapObject-majorLandmarks-${i}`}
-						opacity={1.0}
-						permanent
-						interactive
-					>
-						<LocationLabel
-							{...location}
-							data-category='majorLandmarks'
-							data-index={i}
-							onClick={handleClickMapObject}
-						/>
-					</Tooltip>
-				</Rectangle>
+			{leafletMapObjectEntries.map(([level, leafletMapObjects], i) => (
+				<ExtendedLayerGroup level={parseInt(level)} key={i}>
+					{leafletMapObjects.map(
+						({ rectBounds, anchorCoord, ...mapObject }, mapObjectIndex) => (
+							<React.Fragment key={mapObjectIndex}>
+								<Rectangle
+									bounds={rectBounds}
+									pathOptions={{
+										color: 'transparent',
+										className: `mapObject-${level}-${mapObjectIndex}`,
+									}}
+									eventHandlers={mapObjectEventFns}
+									interactive
+								/>
+								<CircleMarker
+									radius={0}
+									pathOptions={{
+										color: 'transparent',
+									}}
+									center={anchorCoord}
+								>
+									<Tooltip
+										className='map-primary-label'
+										direction='center'
+										opacity={1.0}
+										permanent
+										interactive
+									>
+										<MapObjectLabel
+											{...mapObject}
+											data-category={level}
+											data-index={mapObjectIndex}
+											onClick={handleClickMapObject}
+										/>
+									</Tooltip>
+								</CircleMarker>
+							</React.Fragment>
+						)
+					)}
+				</ExtendedLayerGroup>
 			))}
 
 			<MapContainerEventHandler />
