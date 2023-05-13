@@ -14,9 +14,31 @@
 
 /* Your own custom component styles */
 @layer components {
+	.map-label {
+		font-family: MapLabel, system-ui, sans-serif;
+	}
+
+	.map-label p {
+		text-shadow: 0px 4px 4px #000000, 0px -4px 4px #000000, 4px 0px 4px #000000,
+			-4px 0px 4px #000000;
+	}
+
 	.location-label p {
 		text-shadow: 0px 4px 4px #000000, 0px -4px 4px #000000, 4px 0px 4px #000000,
 			-4px 0px 4px #000000;
+	}
+
+	.leaflet-tooltip.map-primary-label {
+		background-color: transparent;
+		border-color: transparent;
+		box-shadow: none;
+		padding: 0;
+		margin-top: 0;
+		border: 0;
+	}
+
+	.leaflet-tooltip.map-primary-label:before {
+		display: none;
 	}
 }
 

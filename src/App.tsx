@@ -1,8 +1,30 @@
-import { CRS } from 'leaflet';
-import { useCallback, useState } from 'react';
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import { CRS, LeafletEventHandlerFnMap, LeafletMouseEvent } from 'leaflet';
+import {
+	HTMLAttributes,
+	MouseEvent,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
+import {
+	CircleMarker,
+	MapContainer,
+	Marker,
+	Popup,
+	Rectangle,
+	TileLayer,
+	Tooltip,
+	useMapEvent,
+} from 'react-leaflet';
 import { NaturalCurve } from 'react-svg-curve';
 import { useKeyPressEvent } from 'react-use';
+import { MapInfo, MapInfoObjectCategory } from './types/Map.type';
+
+const convertLocationXYToMapCoord = (
+	x: number,
+	y: number
+): [number, number] => [-y - 320, x + 320];
 
 const ZoneLabel = () => {
 	return (
@@ -13,12 +35,14 @@ const ZoneLabel = () => {
 	);
 };
 
-const LocationLabel = ({ x, y, title, subtitle, showDot }: LabelProps) => {
+const LocationLabel = ({
+	title,
+	subtitle,
+	showDot,
+	...divProps
+}: LabelProps) => {
 	return (
-		<div
-			className='location-label pointer-events-none text-center whitespace-nowrap absolute -translate-x-1/2 -translate-y-[20px]'
-			style={{ top: y, left: x }}
-		>
+		<div className='map-label text-center whitespace-nowrap' {...divProps}>
 			<p className='text-[40px] leading-[28px] text-white scale-x-[.92]'>
 				{title}
 			</p>
@@ -27,12 +51,9 @@ const LocationLabel = ({ x, y, title, subtitle, showDot }: LabelProps) => {
 	);
 };
 
-const SublocationLabel = ({ x, y, title, subtitle, showDot }: LabelProps) => {
+const SublocationLabel = ({ title, subtitle, showDot }: LabelProps) => {
 	return (
-		<div
-			className='location-label pointer-events-none text-center whitespace-nowrap absolute -translate-x-1/2 -translate-y-[4px] opacity-70'
-			style={{ top: y, left: x }}
-		>
+		<div className='map-label text-center whitespace-nowrap opacity-70'>
 			{showDot && (
 				<div className='w-3 h-3 rounded-full bg-white border-2 border-black mx-auto mb-2'></div>
 			)}
@@ -116,80 +137,36 @@ const TransportLineWithoutAP = ({ points }: TransportProps) => {
 	);
 };
 
-type LabelProps = {
-	x: number;
-	y: number;
+type LabelProps = HTMLAttributes<HTMLDivElement> & {
 	title: string;
 	subtitle?: string;
 	showDot?: boolean;
 };
+
+type WithTooltipProps<T> = T & {
+	rectBounds: [[number, number], [number, number]];
+	tooltipOffset: [number, number];
+};
+
+type LeafletMapObject = WithTooltipProps<LabelProps>;
 
 type TransportProps = {
 	points: [number, number][];
 	apCost: number;
 };
 
-const regions: LabelProps[] = [];
+const MapContainerEventHandler = () => {
+	useMapEvent('click', (e) => {
+		const latlng = e.latlng;
+		console.log(
+			`x = ${Math.floor(latlng.lng - 320)}, y = ${Math.floor(
+				-latlng.lat - 320
+			)}`
+		);
+	});
 
-const locations: LabelProps[] = [
-	{
-		x: 4009,
-		y: 2864,
-		title: '央城',
-		subtitle: '(Asgard of Midgard)',
-	},
-	{ x: 3392, y: 3027, title: '迦拿', subtitle: '(Cana)' },
-	{ x: 3121, y: 2931, title: '輾土城', subtitle: '(City of Wheel)' },
-	{ x: 3271, y: 2413, title: '亞爾夫海姆', subtitle: '(Álfheimr)' },
-	{ x: 3125, y: 2685, title: '賽吾爾城', subtitle: "(Za' Ura)" },
-];
-
-const sublocations: LabelProps[] = [
-	{
-		x: 3577,
-		y: 2744,
-		title: '慈特',
-		subtitle: '(Zite)',
-	},
-	{ x: 3166, y: 3015, title: '南嶺農村', subtitle: '', showDot: true },
-	{ x: 3305, y: 2945, title: '眠塔', subtitle: '(Grave Tower)' },
-	{ x: 3518, y: 3171, title: '礦坑', subtitle: '', showDot: true },
-];
-
-const transports: TransportProps[] = [
-	{
-		points: [
-			[3915, 2868],
-			[3550, 2834],
-			[3180, 2895],
-		],
-		apCost: 1,
-	},
-	{
-		points: [
-			[3128, 2973],
-			[3232, 3020],
-			[3343, 3018],
-		],
-		apCost: 0,
-	},
-	{
-		points: [
-			[3438, 3022],
-			[3469, 3089],
-			[3513, 3161],
-		],
-		apCost: 0,
-	},
-	{
-		points: [
-			[3120, 2887],
-			[3125, 2809],
-			[3128, 2724],
-		],
-		apCost: 2,
-	},
-];
+	return null;
+};
 
 function App() {
 	const handleClickMap = (e: React.MouseEvent) => {
@@ -203,6 +180,96 @@ function App() {
 	}, []);
 
 	useKeyPressEvent('1', handleChangeTransportLineMode);
+
+	const [mapInfo, setMapInfo] = useState<MapInfo>();
+	useEffect(() => {
+		fetch('/jsons/map.json')
+			.then((res) => res.json())
+			.then(setMapInfo);
+	}, []);
+
+	const { majorLandmarks } = useMemo<{
+		majorLandmarks: LeafletMapObject[];
+	}>(() => {
+		if (!mapInfo) {
+			return {
+				majorLandmarks: [],
+			};
+		}
+
+		try {
+			return {
+				majorLandmarks: mapInfo.data.mapObject.majorLandmarks.map(
+					({ coord, ...item }) => ({
+						...item,
+						rectBounds: [
+							convertLocationXYToMapCoord(coord.areaStartX, coord.areaStartY),
+							convertLocationXYToMapCoord(coord.areaEndX, coord.areaEndY),
+						],
+						tooltipOffset: [
+							0,
+							Math.max(
+								-14,
+								Math.floor(((coord.areaEndY - coord.areaStartY) / 2) * 0.8)
+							),
+						],
+					})
+				),
+			};
+		} catch (e) {
+			console.log(e);
+			console.error('發生了問題！請通知月月修復處理！');
+		}
+
+		return {
+			majorLandmarks: [],
+		};
+	}, [mapInfo]);
+
+	const handleClickMapObject = useCallback(
+		(e: MouseEvent<HTMLDivElement> | LeafletMouseEvent) => {
+			try {
+				if ((e as LeafletMouseEvent).originalEvent !== undefined) {
+					const [, category, index] = (
+						(e as LeafletMouseEvent).originalEvent.target as HTMLElement
+					)
+						.getAttribute('class')
+						?.split(' ')
+						.find((className) => className.startsWith('mapObject'))
+						?.split('-') as [unknown, MapInfoObjectCategory, string];
+
+					const mapObject = mapInfo?.data.mapObject[category][parseInt(index)];
+
+					console.log(mapObject);
+				} else {
+					(e as MouseEvent<HTMLDivElement>).stopPropagation();
+
+					const category = (
+						e as MouseEvent<HTMLDivElement>
+					).currentTarget.getAttribute(
+						'data-category'
+					) as MapInfoObjectCategory;
+					const index = (
+						e as MouseEvent<HTMLDivElement>
+					).currentTarget.getAttribute('data-index') as string;
+
+					const mapObject = mapInfo?.data.mapObject[category][parseInt(index)];
+
+					console.log(mapObject);
+				}
+			} catch (e) {
+				console.error(e);
+			}
+		},
+		[mapInfo]
+	);
+
+	const mapObjectEventFns = useMemo<LeafletEventHandlerFnMap>(
+		() => ({
+			click: handleClickMapObject,
+		}),
+		[handleClickMapObject]
+	);
 
 	return (
 		// <div className='relative'>
@@ -233,9 +300,9 @@ function App() {
 				[-320, 320],
 				[-5780, 8512],
 			]}
-			center={[-2000, 4000]}
+			center={[-3118, 4320]}
 			minZoom={-3}
-			maxZoom={0}
+			maxZoom={2}
 			zoom={0}
 			scrollWheelZoom={false}
 			crs={CRS.Simple}
@@ -252,11 +319,40 @@ function App() {
 				]}
 				tileSize={320}
 			/>
-			<Marker position={[51.505, -0.09]}>
-				<Popup>
-					A pretty CSS3 popup. <br /> Easily customizable.
-				</Popup>
-			</Marker>
+			{/* <Marker position={[-2000, 4000]}>
+				<Popup>Hello world</Popup>
+			</Marker> */}
+
+			{majorLandmarks.map(({ rectBounds, tooltipOffset, ...location }, i) => (
+				<Rectangle
+					key={i}
+					bounds={rectBounds}
+					pathOptions={{
+						color: 'black',
+						className: `mapObject-majorLandmarks-${i}`,
+					}}
+					eventHandlers={mapObjectEventFns}
+					interactive
+				>
+					<Tooltip
+						direction='bottom'
+						offset={tooltipOffset}
+						className={`map-primary-label mapObject-majorLandmarks-${i}`}
+						opacity={1.0}
+						permanent
+						interactive
+					>
+						<LocationLabel
+							{...location}
+							data-category='majorLandmarks'
+							data-index={i}
+							onClick={handleClickMapObject}
+						/>
+					</Tooltip>
+				</Rectangle>
+			))}
+
+			<MapContainerEventHandler />
 		</MapContainer>
 	);
 }

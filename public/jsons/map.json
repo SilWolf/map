@@ -1,0 +1,65 @@
+{
+	"version": "2023-05-13",
+	"data": {
+		"metadata": {
+			"width": 8192,
+			"height": 5460
+		},
+		"mapObject": {
+			"majorZones": [],
+			"majorLandmarks": [
+				{
+					"coord": {
+						"areaStartX": 3858,
+						"areaStartY": 2604,
+						"areaEndX": 4150,
+						"areaEndY": 2921
+					},
+					"title": "央城",
+					"subtitle": "(Asgard of Midgard)"
+				},
+				{
+					"coord": {
+						"areaStartX": 3353,
+						"areaStartY": 2965,
+						"areaEndX": 3450,
+						"areaEndY": 3025
+					},
+					"title": "迦拿",
+					"subtitle": "(Cana)"
+				},
+				{
+					"coord": {
+						"areaStartX": 3049,
+						"areaStartY": 2844,
+						"areaEndX": 3203,
+						"areaEndY": 2934
+					},
+					"title": "輾土城",
+					"subtitle": "(City of Wheel)"
+				},
+				{
+					"coord": {
+						"areaStartX": 3219,
+						"areaStartY": 2251,
+						"areaEndX": 3407,
+						"areaEndY": 2406
+					},
+					"title": "亞爾夫海姆",
+					"subtitle": "(Álfheimr)"
+				},
+				{
+					"coord": {
+						"areaStartX": 3042,
+						"areaStartY": 2675,
+						"areaEndX": 3123,
+						"areaEndY": 2764
+					},
+					"title": "賽吾爾城",
+					"subtitle": "(Za' Ura)"
+				}
+			],
+			"minorLandmarks": []
+		}
+	}
+}
