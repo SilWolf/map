@@ -1,0 +1,5 @@
+@font-face {
+	font-family: MapLabel;
+	font-weight: normal;
+	src: url('./fonts/font.ttf') format('truetype');
+}
