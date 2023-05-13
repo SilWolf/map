@@ -18,6 +18,7 @@ export type MapObject = {
 export type MapConnection = {
 	points: (string | [number, number])[];
 	level: number;
+	cost?: number;
 };
 
 export type MapInfoMetadata = {

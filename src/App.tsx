@@ -165,6 +165,91 @@ type LeafletMapObject = WithTooltipProps<LabelProps>;
 
 type LeafletMapConnection = {
 	points: [number, number][];
+	cost?: number;
+};
+
+const MapConnectionLine = ({ points, cost }: LeafletMapConnection) => {
+	const thisPoints = useMemo<[number, number][]>(() => {
+		if (typeof cost === 'undefined') {
+			return points;
+		}
+
+		if (points.length % 2 === 1) {
+			return points;
+		}
+
+		const left = points[points.length / 2 - 1];
+		const right = points[points.length / 2];
+
+		const mid: [number, number] = [
+			Math.floor((left[0] + right[0]) / 2),
+			Math.floor((left[1] + right[1]) / 2),
+		];
+
+		return [
+			...points.slice(0, points.length / 2),
+			mid,
+			...points.slice(points.length / 2),
+		];
+	}, [cost, points]);
+
+	const pointElementFn = useCallback(
+		([x, y]: number[], i: number) => {
+			if (i !== Math.floor(points.length / 2)) {
+				return <></>;
+			}
+
+			return (
+				<g>
+					<rect
+						key={i}
+						x={x - 40}
+						y={y - 18}
+						rx='10'
+						ry='10'
+						width='80'
+						height='30'
+						stroke='rgba(52, 217, 235, 0.85)'
+						fill='rgba(52, 217, 235, 0.85)'
+						stroke-width='5'
+					/>
+					<text
+						x={x}
+						y={y}
+						alignmentBaseline='middle'
+						textAnchor='middle'
+						fill='#FFFFFF'
+						fontSize={24}
+					>
+						{cost} AP
+					</text>
+				</g>
+			);
+		},
+		[cost, points.length]
+	);
+
+	if (typeof cost !== 'undefined') {
+		return (
+			<NaturalCurve
+				data={thisPoints}
+				strokeWidth={15}
+				stroke='rgba(52, 217, 235, 0.85)'
+				pointElement={pointElementFn}
+			/>
+		);
+	}
+
+	return (
+		<NaturalCurve
+			data={points}
+			strokeWidth={4}
+			strokeLinecap='round'
+			strokeDasharray='1, 8'
+			stroke='rgba(255, 255, 255, 1)'
+			showPoints={false}
+		/>
+	);
 };
 
 type TransportProps = {
@@ -462,16 +547,8 @@ function App() {
 						]}
 					>
 						<svg viewBox='0 0 8192 5460'>
-							{leafletMapConnections.map(({ points }, i) => (
-								<NaturalCurve
-									key={i}
-									data={points}
-									strokeWidth={4}
-									strokeLinecap='round'
-									strokeDasharray='1, 8'
-									stroke='rgba(255, 255, 255, 1)'
-									showPoints={false}
-								/>
+							{leafletMapConnections.map(({ ...connection }, i) => (
+								<MapConnectionLine key={i} {...connection} />
 							))}
 						</svg>
 					</SVGOverlay>
