@@ -1,6 +1,34 @@
-import { useCallback, useState } from 'react';
+import { CRS, LeafletEventHandlerFnMap, LeafletMouseEvent } from 'leaflet';
+import {
+	HTMLAttributes,
+	MouseEvent,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
+import {
+	CircleMarker,
+	LayerGroup,
+	LayerGroupProps,
+	MapContainer,
+	Marker,
+	Popup,
+	Rectangle,
+	TileLayer,
+	Tooltip,
+	useMap,
+	useMapEvent,
+} from 'react-leaflet';
 import { NaturalCurve } from 'react-svg-curve';
 import { useKeyPressEvent } from 'react-use';
+import { MapInfo, MapInfoObjectCategory, MapObject } from './types/Map.type';
+import React from 'react';
+
+const convertLocationXYToMapCoord = (
+	x: number,
+	y: number
+): [number, number] => [-y - 320, x + 320];
 
 const ZoneLabel = () => {
 	return (
@@ -11,29 +39,52 @@ const ZoneLabel = () => {
 	);
 };
 
-const LocationLabel = ({ x, y, title, subtitle, showDot }: LabelProps) => {
+const MapObjectLabel = ({
+	title,
+	subtitle,
+	showDot,
+	importance = 0,
+	...divProps
+}: LabelProps) => {
+	const [containerClassName, titleClassName, subtitleClassName] =
+		useMemo(() => {
+			if (importance < 0) {
+				return [
+					'text-white opacity-70',
+					'text-[28px] leading-[20px] scale-x-[.92]',
+					'text-[14px] scale-x-[.88]',
+				];
+			}
+
+			return [
+				'text-white',
+				'text-[40px] leading-[28px] scale-x-[.92]',
+				'text-[20px] scale-x-[.88]',
+			];
+		}, [importance]);
+
 	return (
 		<div
-			className='location-label pointer-events-none text-center whitespace-nowrap absolute -translate-x-1/2 -translate-y-[20px]'
-			style={{ top: y, left: x }}
+			className={`map-label text-center whitespace-nowrap ${containerClassName}`}
+			{...divProps}
 		>
-			<p className='text-[40px] leading-[28px] text-white scale-x-[.92]'>
-				{title}
-			</p>
-			<p className='text-[20px] text-white scale-x-[.88]'>{subtitle}</p>
+			<p className={titleClassName}>{title}</p>
+			<p className={subtitleClassName}>{subtitle}</p>
 		</div>
 	);
 };
 
-const SublocationLabel = ({ x, y, title, subtitle, showDot }: LabelProps) => {
+const MinorLandmarkLabel = ({
+	title,
+	subtitle,
+	showDot,
+	...divProps
+}: LabelProps) => {
 	return (
 		<div
-			className='location-label pointer-events-none text-center whitespace-nowrap absolute -translate-x-1/2 -translate-y-[4px] opacity-70'
-			style={{ top: y, left: x }}
+			className='map-label text-center whitespace-nowrap opacity-70'
+			{...divProps}
 		>
-			{showDot && (
-				<div className='w-3 h-3 rounded-full bg-white border-2 border-black mx-auto mb-2'></div>
-			)}
 			<p className='text-[28px] leading-[20px] text-white scale-x-[.92]'>
 				{title}
 			</p>
@@ -114,80 +165,54 @@ const TransportLineWithoutAP = ({ points }: TransportProps) => {
 	);
 };
 
-type LabelProps = {
-	x: number;
-	y: number;
+type LabelProps = HTMLAttributes<HTMLDivElement> & {
 	title: string;
 	subtitle?: string;
 	showDot?: boolean;
+	importance?: number;
 };
+
+type WithTooltipProps<T> = T & {
+	rectBounds: [[number, number], [number, number]];
+	anchorCoord: [number, number];
+};
+
+type LeafletMapObject = WithTooltipProps<LabelProps>;
 
 type TransportProps = {
 	points: [number, number][];
 	apCost: number;
 };
 
-const regions: LabelProps[] = [];
+type ExtendedLayerGroupProps = LayerGroupProps & {
+	level: number;
+};
 
-const locations: LabelProps[] = [
-	{
-		x: 4009,
-		y: 2864,
-		title: '央城',
-		subtitle: '(Asgard of Midgard)',
-	},
-	{ x: 3392, y: 3027, title: '迦拿', subtitle: '(Cana)' },
-	{ x: 3121, y: 2931, title: '輾土城', subtitle: '(City of Wheel)' },
-	{ x: 3271, y: 2413, title: '亞爾夫海姆', subtitle: '(Álfheimr)' },
-	{ x: 3125, y: 2685, title: '賽吾爾城', subtitle: "(Za' Ura)" },
-];
+const ExtendedLayerGroup = ({ level, ...props }: ExtendedLayerGroupProps) => {
+	const [zoom, setZoom] = useState<number>(0);
+	const map = useMapEvent('zoomend', () => {
+		setZoom(map.getZoom());
+	});
 
-const sublocations: LabelProps[] = [
-	{
-		x: 3577,
-		y: 2744,
-		title: '慈特',
-		subtitle: '(Zite)',
-	},
-	{ x: 3166, y: 3015, title: '南嶺農村', subtitle: '', showDot: true },
-	{ x: 3305, y: 2945, title: '眠塔', subtitle: '(Grave Tower)' },
-	{ x: 3518, y: 3171, title: '礦坑', subtitle: '', showDot: true },
-];
+	if (zoom < level - 1 || zoom > level + 1) {
+		return null;
+	}
 
-const transports: TransportProps[] = [
-	{
-		points: [
-			[3915, 2868],
-			[3550, 2834],
-			[3180, 2895],
-		],
-		apCost: 1,
-	},
-	{
-		points: [
-			[3128, 2973],
-			[3232, 3020],
-			[3343, 3018],
-		],
-		apCost: 0,
-	},
-	{
-		points: [
-			[3438, 3022],
-			[3469, 3089],
-			[3513, 3161],
-		],
-		apCost: 0,
-	},
-	{
-		points: [
-			[3120, 2887],
-			[3125, 2809],
-			[3128, 2724],
-		],
-		apCost: 2,
-	},
-];
+	return <LayerGroup {...props} />;
+};
+
+const MapContainerEventHandler = () => {
+	useMapEvent('click', (e) => {
+		const latlng = e.latlng;
+		console.log(
+			`x = ${Math.floor(latlng.lng - 320)}, y = ${Math.floor(
+				-latlng.lat - 320
+			)}`
+		);
+	});
+
+	return null;
+};
 
 function App() {
 	const handleClickMap = (e: React.MouseEvent) => {
@@ -202,28 +227,209 @@ function App() {
 
 	useKeyPressEvent('1', handleChangeTransportLineMode);
 
+	const [mapInfo, setMapInfo] = useState<MapInfo>();
+	useEffect(() => {
+		fetch('/jsons/map.json')
+			.then((res) => res.json())
+			.then(setMapInfo);
+	}, []);
+
+	const leafletMapObjects = useMemo<Record<number, LeafletMapObject[]>>(() => {
+		if (!mapInfo) {
+			return {};
+		}
+
+		const result: Record<number, LeafletMapObject[]> = {};
+
+		for (const mapObject of mapInfo.data.mapObjects) {
+			if (!result[mapObject.level]) {
+				result[mapObject.level] = [];
+			}
+			try {
+				result[mapObject.level].push({
+					...mapObject,
+					rectBounds: [
+						convertLocationXYToMapCoord(
+							mapObject.coord.areaStartX,
+							mapObject.coord.areaStartY
+						),
+						convertLocationXYToMapCoord(
+							mapObject.coord.areaEndX,
+							mapObject.coord.areaEndY
+						),
+					],
+					anchorCoord: mapObject.anchorCoord
+						? convertLocationXYToMapCoord(
+								mapObject.anchorCoord.x,
+								mapObject.anchorCoord.y
+						  )
+						: convertLocationXYToMapCoord(
+								Math.floor(
+									(mapObject.coord.areaStartX + mapObject.coord.areaEndX) / 2
+								),
+								Math.floor(
+									(mapObject.coord.areaStartY + mapObject.coord.areaEndY) / 2
+								)
+						  ),
+				});
+			} catch (e) {
+				console.error(
+					`${mapObject.title} (level = ${mapObject.level}) 轉化失敗!`,
+					e
+				);
+			}
+		}
+
+		return result;
+	}, [mapInfo]);
+
+	const leafletMapObjectEntries = useMemo(
+		() => Object.entries(leafletMapObjects),
+		[leafletMapObjects]
+	);
+
+	const handleClickMapObject = useCallback(
+		(e: MouseEvent<HTMLDivElement> | LeafletMouseEvent) => {
+			try {
+				if ((e as LeafletMouseEvent).originalEvent !== undefined) {
+					const [, category, index] = (
+						(e as LeafletMouseEvent).originalEvent.target as HTMLElement
+					)
+						.getAttribute('class')
+						?.split(' ')
+						.find((className) => className.startsWith('mapObject'))
+						?.split('-') as [unknown, MapInfoObjectCategory, string];
+
+					const mapObject =
+						leafletMapObjects[parseInt(category)][parseInt(index)];
+
+					console.log(mapObject);
+				} else {
+					(e as MouseEvent<HTMLDivElement>).stopPropagation();
+
+					const category = (
+						e as MouseEvent<HTMLDivElement>
+					).currentTarget.getAttribute(
+						'data-category'
+					) as MapInfoObjectCategory;
+					const index = (
+						e as MouseEvent<HTMLDivElement>
+					).currentTarget.getAttribute('data-index') as string;
+
+					const mapObject =
+						leafletMapObjects[parseInt(category)][parseInt(index)];
+
+					console.log(mapObject);
+				}
+			} catch (e) {
+				console.error(e);
+			}
+		},
+		[leafletMapObjects]
+	);
+
+	const mapObjectEventFns = useMemo<LeafletEventHandlerFnMap>(
+		() => ({
+			click: handleClickMapObject,
+		}),
+		[handleClickMapObject]
+	);
+
 	return (
-		<div className='relative'>
-			<img
-				src='./images/map.png'
-				className='!max-w-none w-[8192px] h-[5460px]'
-				onClick={handleClickMap}
+		// <div className='relative'>
+		// 	<img
+		// 		src='./images/map.png'
+		// 		className='!max-w-none w-[8192px] h-[5460px]'
+		// 		onClick={handleClickMap}
+		// 	/>
+		// 	{locations.map((location) => (【
+		// 		<MinorLandmarkLabel {...location} />
+		// 	))}
+		// 	{sublocations.map((sublocation) => (
+		// 		<SubMinorLandmarkLabel {...sublocation} />
+		// 	))}
+
+		// 	{transportLineMode === 0 &&
+		// 		transports.map((transport) => <TransportLine {...transport} />)}
+
+		// 	{transportLineMode === 1 &&
+		// 		transports.map((transport) => (
+		// 			<TransportLineWithoutAP {...transport} />
+		// 		))}
+		// </div>
+
+		<MapContainer
+			className='w-screen h-screen'
+			maxBounds={[
+				[-320, 320],
+				[-5780, 8512],
+			]}
+			center={[-3118, 4320]}
+			minZoom={-3}
+			maxZoom={2}
+			zoom={0}
+			crs={CRS.Simple}
+		>
+			<TileLayer
+				attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				url='/images/map-tiles/row-{y}-column-{x}.png'
+				maxNativeZoom={0}
+				minNativeZoom={0}
+				minZoom={-99}
+				bounds={[
+					[-320, 320],
+					[-5780, 8512],
+				]}
+				tileSize={320}
 			/>
-			{locations.map((location) => (
-				<LocationLabel {...location} />
-			))}
-			{sublocations.map((sublocation) => (
-				<SublocationLabel {...sublocation} />
+			{/* <Marker position={[-2000, 4000]}>
+				<Popup>Hello world</Popup>
+			</Marker> */}
+
+			{leafletMapObjectEntries.map(([level, leafletMapObjects], i) => (
+				<ExtendedLayerGroup level={parseInt(level)} key={i}>
+					{leafletMapObjects.map(
+						({ rectBounds, anchorCoord, ...mapObject }, mapObjectIndex) => (
+							<React.Fragment key={mapObjectIndex}>
+								<Rectangle
+									bounds={rectBounds}
+									pathOptions={{
+										color: 'transparent',
+										className: `mapObject-${level}-${mapObjectIndex}`,
+									}}
+									eventHandlers={mapObjectEventFns}
+									interactive
+								/>
+								<CircleMarker
+									radius={0}
+									pathOptions={{
+										color: 'transparent',
+									}}
+									center={anchorCoord}
+								>
+									<Tooltip
+										className='map-primary-label'
+										direction='center'
+										opacity={1.0}
+										permanent
+										interactive
+									>
+										<MapObjectLabel
+											{...mapObject}
+											data-category={level}
+											data-index={mapObjectIndex}
+											onClick={handleClickMapObject}
+										/>
+									</Tooltip>
+								</CircleMarker>
+							</React.Fragment>
+						)
+					)}
+				</ExtendedLayerGroup>
 			))}
 
-			{transportLineMode === 0 &&
-				transports.map((transport) => <TransportLine {...transport} />)}
-
-			{transportLineMode === 1 &&
-				transports.map((transport) => (
-					<TransportLineWithoutAP {...transport} />
-				))}
-		</div>
+			<MapContainerEventHandler />
+		</MapContainer>
 	);
 }
 

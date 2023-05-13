@@ -1,0 +1,142 @@
+{
+	"version": "2023-05-13",
+	"data": {
+		"metadata": {
+			"width": 8192,
+			"height": 5460
+		},
+		"mapObjects": [
+			{
+				"coord": {
+					"areaStartX": 3858,
+					"areaStartY": 2604,
+					"areaEndX": 4150,
+					"areaEndY": 2921
+				},
+				"anchorCoord": {
+					"x": 4000,
+					"y": 2890
+				},
+				"title": "央城",
+				"subtitle": "(Asgard of Midgard)",
+				"level": 0
+			},
+			{
+				"coord": {
+					"areaStartX": 3353,
+					"areaStartY": 2965,
+					"areaEndX": 3450,
+					"areaEndY": 3025
+				},
+				"anchorCoord": {
+					"x": 3400,
+					"y": 3013
+				},
+				"title": "迦拿",
+				"subtitle": "(Cana)",
+				"level": 0
+			},
+			{
+				"coord": {
+					"areaStartX": 3049,
+					"areaStartY": 2844,
+					"areaEndX": 3203,
+					"areaEndY": 2934
+				},
+				"anchorCoord": {
+					"x": 3123,
+					"y": 2920
+				},
+				"title": "輾土城",
+				"subtitle": "(City of Wheel)",
+				"level": 0
+			},
+			{
+				"coord": {
+					"areaStartX": 3219,
+					"areaStartY": 2251,
+					"areaEndX": 3407,
+					"areaEndY": 2406
+				},
+				"anchorCoord": {
+					"x": 3309,
+					"y": 2385
+				},
+				"title": "亞爾夫海姆",
+				"subtitle": "(Álfheimr)",
+				"level": 0
+			},
+			{
+				"coord": {
+					"areaStartX": 3042,
+					"areaStartY": 2675,
+					"areaEndX": 3123,
+					"areaEndY": 2764
+				},
+				"anchorCoord": {
+					"x": 3082,
+					"y": 2746
+				},
+				"title": "賽吾爾城",
+				"subtitle": "(Za' Ura)",
+				"level": 0
+			},
+			{
+				"coord": {
+					"areaStartX": 3535,
+					"areaStartY": 2681,
+					"areaEndX": 3649,
+					"areaEndY": 2763
+				},
+				"anchorCoord": {
+					"x": 3591,
+					"y": 2750
+				},
+				"title": "慈特",
+				"subtitle": "(Zite)",
+				"level": 0,
+				"importance": -1
+			},
+			{
+				"coord": {
+					"areaStartX": 3148,
+					"areaStartY": 3000,
+					"areaEndX": 3174,
+					"areaEndY": 3022
+				},
+				"title": "南嶺農村",
+				"subtitle": "",
+				"level": 0,
+				"importance": -1
+			},
+			{
+				"coord": {
+					"areaStartX": 3285,
+					"areaStartY": 2879,
+					"areaEndX": 3325,
+					"areaEndY": 2947
+				},
+				"anchorCoord": {
+					"x": 3304,
+					"y": 2936
+				},
+				"title": "眠塔",
+				"subtitle": "(Grave Tower)",
+				"level": 0,
+				"importance": -1
+			},
+			{
+				"coord": {
+					"areaStartX": 3512,
+					"areaStartY": 3181,
+					"areaEndX": 3533,
+					"areaEndY": 3200
+				},
+				"title": "礦坑",
+				"subtitle": "",
+				"level": 0,
+				"importance": -1
+			}
+		]
+	}
+}
