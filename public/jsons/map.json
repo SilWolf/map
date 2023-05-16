@@ -172,7 +172,8 @@
 				"level": 0,
 				"startPoint": "south-mine",
 				"points": [[3488, 3070]],
-				"endPoint": "cana"
+				"endPoint": "cana",
+				"isMinor": true
 			},
 			{
 				"level": 0,

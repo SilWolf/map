@@ -26,7 +26,9 @@ const SettlementsPage = () => {
 		])
 			.then(([mapInfo, settlementInfo]) => {
 				const mapObjects = mapInfo.data.mapObjects;
-				const mapConnections = mapInfo.data.mapConnections;
+				const mapConnections = mapInfo.data.mapConnections.filter(
+					({ isMinor }) => !isMinor
+				);
 
 				const settlements = settlementInfo.data.settlements.map(
 					(settlement) => {
@@ -89,21 +91,21 @@ const SettlementsPage = () => {
 					(s) =>
 						`
 		[div]
-		[table width=756 cellspacing=0 cellpadding=0 border=0]
+		[table width=95% cellspacing=0 cellpadding=0 border=0]
 		[tr]
 		[td align=center valign=top width=300 rowspan=2][img=${
 			s.imgSrc ?? 'https://placehold.co/300x225.png'
 		}][/td]
 		[td align=center valign=top colspan=2 height=28][size=5][color=#2897a6][b]${
 			s.name
-		}[/b][/color][/size][/td]
+		} ${s.subName}[/b][/color][/size][/td]
 		[/tr]
 		[tr]
 		[td align=left valign=top]
 		${s.description
 			.split('\n')
 			.map((line) => `[div][size=3]${line}[/size][/div]`)
-			.join('[div]　[/div]')}
+			.join('[div]　　[/div]')}
 		[/td]
 		[/tr]
 		[tr]
@@ -141,7 +143,10 @@ const SettlementsPage = () => {
 		[tr]
 		[td align=left]
 		[div][size=4][color=#ffffff][b]${landmark.name}[/b][/color][/size][/div]
-		[div][size=1][color=#ffffff]${landmark.description}[/color][/size][/div]
+		${landmark.description
+			.split('\n')
+			.map((line) => `[div][size=1][color=#f2f2f2]${line}[/color][/size][/div]`)
+			.join('\n')}
 		[/td]
 		[td align=right]
 		[img=${landmark.imgSrc ?? 'https://placehold.co/200x75.png'}]
@@ -150,35 +155,38 @@ const SettlementsPage = () => {
 		[/table]
 		[/td]
 		[/tr]
-		${landmark.actions?.map(
-			(action) => `
 		[tr]
 		[td valign=top]
 		[table width=100% cellspacing=0 cellpadding=0 border=0]
+		${landmark.actions
+			?.map(
+				(action, i) => `
 		[tr]
-		[td align=left valign=center]
+		[td align=left valign=center${i % 2 === 1 ? ' bgcolor=#f5f5f5' : ''}]
 		[div][size=3]└ [b][color=#eb3434]${
 			action.apCost ? `&#91;${action.apCost}AP&#93;` : ''
 		}[/color][/b] ${action.title}[/size][/div]
-		[div][size=1]　　　　　${action.description}[/size][/div]
+		[div][size=1][color=#636363]　　　　　${action.description}[/color][/size][/div]
 		[/td]
-		[td align=right valign=center]
+		[td align=right valign=center${i % 2 === 1 ? ' bgcolor=#f5f5f5' : ''}]
 		[img=${action.imgSrc ?? 'https://placehold.co/200x50.png'}]
 		[/td]
 		[/tr]
+		`
+			)
+			.join('')}
 		[/table]
 		[/td]
 		[/tr]
-		`
-		)}
 		[/table]
 		`
 			)
-			.join('\n')}
+			.join('[div]　　[/div]')}
 		[/td]
 		[/tr]
 		[tr]
 		[td align=left valign=top colspan=2]
+		[div]　　[/div]
 		[table width=100% cellspacing=0 cellpadding=0 border=1]
 		[tr]
 		[td bgcolor=#8a6f5b valign=center]
@@ -193,12 +201,12 @@ const SettlementsPage = () => {
 		[/table]
 		[/td]
 		[/tr]
-		${s.connections
-			?.map(
-				(connection) => `
 		[tr]
 		[td valign=top]
 		[table width=100% cellspacing=0 cellpadding=0 border=0]
+		${s.connections
+			?.map(
+				(connection) => `
 		[tr]
 		[td align=left valign=center]
 		[div][size=3]→ [b][color=#eb3434]${
@@ -211,9 +219,6 @@ const SettlementsPage = () => {
 		}
 		[/td]
 		[/tr]
-		[/table]
-		[/td]
-		[/tr]
 		`
 			)
 			.join('\n')}
@@ -221,21 +226,24 @@ const SettlementsPage = () => {
 		[/td]
 		[/tr]
 		[/table]
+		[/td]
+		[/tr]
+		[/table]
 		[/div]
 		`
 				)
-				.join('[div]　　[/div]') ?? ''
+				.join(
+					'[div]　　[/div][div]　　[/div][hr][div]　　[/div][div]　　[/div]'
+				) ?? ''
 		).replace(/[\t\n]/g, '');
 	}, [settlements]);
-
-	console.log(settlements, minified);
 
 	const handleClickCopy = useCallback(() => {
 		window.navigator.clipboard.writeText(minified);
 	}, [minified]);
 
 	return (
-		<div className='container mx-auto'>
+		<div className='container mx-auto py-16'>
 			<div>
 				<button
 					onClick={handleClickCopy}
@@ -244,7 +252,7 @@ const SettlementsPage = () => {
 					Copy
 				</button>
 			</div>
-			<div className='mt-8'>
+			<div className='mt-8 max-h-[200px] overflow-hidden'>
 				<code className='mt-16 text-sm'>{minified}</code>
 			</div>
 		</div>

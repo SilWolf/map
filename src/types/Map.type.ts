@@ -23,6 +23,7 @@ export type MapConnection = {
 	endPoint: MapConnectionPoint;
 	level: number;
 	cost?: number;
+	isMinor?: boolean;
 };
 
 export type MapInfoMetadata = {

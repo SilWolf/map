@@ -3,23 +3,286 @@
 	"data": {
 		"settlements": [
 			{
+				"mapObjectId": "asgard-of-midgard",
+				"description": "自由聯邦的首都、米德加爾特的中心，曾經被稱為「阿斯嘉特城」，作為眾多冒險故事的起點，有著繁華熱鬧的氣氛。\n央城分為上央與下央，上央最著名的是世界樹，下央最著名的則是尋光列車總站。",
+				"metadata": {
+					"position": "自由聯邦中央",
+					"country": "聯邦制限區",
+					"type": "首都、多人種",
+					"population": "難以統計"
+				},
+				"imgSrc": "https://i.imgur.com/odFuA5b.jpg",
+				"landmarks": [
+					{
+						"name": "「狼部」城衛隊辦公室",
+						"description": "全稱「亞人犯罪對策部狼部」的部隊辦公室，位於上央北方文化區",
+						"imgSrc": "https://i.imgur.com/StA9dFW.jpg",
+						"actions": [
+							{
+								"apCost": 1,
+								"title": "拜訪部長法莎蒂．翠．瑪瑟妮亞",
+								"description": "人稱「狼怪獵人」，專門打擊境內狼族的罪行",
+								"imgSrc": "https://i.imgur.com/KSFRS7x.jpg"
+							}
+						]
+					},
+					{
+						"name": "沃野商町",
+						"description": "由狼人族群建立的商區，位於下央尋車列車總站附近",
+						"imgSrc": "https://i.imgur.com/O6oIjhC.png",
+						"actions": [
+							{
+								"apCost": 1,
+								"title": "拜訪卡洛特．海沃爾",
+								"description": "萬國商會駐央城的總負責人、沃野商町的會長、『央城大狼』，是很忙碌的狼",
+								"imgSrc": "https://i.imgur.com/spHHvhG.png"
+							},
+							{
+								"apCost": 1,
+								"title": "拜訪喀魯",
+								"description": "大狼的代理，比起大狼更容易找上",
+								"imgSrc": "https://i.imgur.com/DiCTdIX.png"
+							}
+						]
+					},
+					{
+						"name": "神愛醫總",
+						"description": "『慈愛』，當年最大最先進的下央醫院",
+						"imgSrc": "https://i.imgur.com/eu5vQCl.jpg",
+						"actions": [
+							{
+								"apCost": 1,
+								"title": "拜訪委託中被抓的男高精靈",
+								"description": "似乎在委託中受的傷害仍未恢復完全，正在靜養當中",
+								"imgSrc": "https://i.imgur.com/0AkrUwf.jpg"
+							}
+						]
+					}
+				]
+			},
+			{
 				"mapObjectId": "city-of-wheel",
-				"description": "第一行\n\n第二行",
+				"description": "作為梵亞斯及自由聯邦交界的大城市，輾土城現在隸屬聯邦一方，其最大特色是被架高的石質建築，以及無數馬車輾過的黃土路面。\n城市充滿舊時被梵亞斯統治的痕跡，街上到處都能看見十字神的教堂。城牆外有帳篷林立的「貧民區」，在這裡反而能買到褻瀆十字神的物品，邪教風氣也較盛行。",
 				"metadata": {
 					"position": "自由聯邦與梵亞斯交界",
 					"country": "聯邦制限區",
 					"type": "次級城市、多人種",
-					"population": "208萬"
+					"population": "約208萬"
 				},
+				"imgSrc": "https://i.imgur.com/b8uJbT9.png",
 				"landmarks": [
 					{
 						"name": "城衛隊辦公室",
-						"description": "為了調查從『狼群』據點取回的各種物件，你們拜訪漢克長官位於輾土城的辦公室。",
+						"description": "為了調查從『狼群』據點取回的各種物件，你們拜訪漢克長官位於輾土城的辦公室",
+						"imgSrc": "https://i.imgur.com/fMWqAQO.jpg",
 						"actions": [
+							{
+								"apCost": 0,
+								"title": "拜訪漢克長官",
+								"description": "違反上司的禁止搜查命令，正在文件地獄中掙扎",
+								"imgSrc": "https://i.imgur.com/HUT1bu5.jpg"
+							},
 							{
 								"apCost": 1,
 								"title": "詢問被捕的『狼群』教徒",
-								"description": "從教徒身上獲取更多『狼群』的資訊。"
+								"description": "從教徒身上獲取更多『狼群』的資訊",
+								"imgSrc": "https://i.imgur.com/IQcxzS4.jpg"
+							},
+							{
+								"apCost": 1,
+								"title": "調查『狼群』面具",
+								"description": "面具有洗腦及催眠的作用，從上面也許能得到更多情報？",
+								"imgSrc": "https://i.imgur.com/GkMY7F5.jpg"
+							},
+							{
+								"apCost": 1,
+								"title": "調查血霧",
+								"description": "在首次委託中，獲取了一些血霧來進行研究",
+								"imgSrc": "https://i.imgur.com/rCCQP6i.jpg"
+							}
+						]
+					},
+					{
+						"name": "貧民區",
+						"description": "輾土城的貧民區位於牆外，不詳的宗教在這裡才是主流",
+						"imgSrc": "https://i.imgur.com/BP9trMP.jpg",
+						"actions": [
+							{
+								"apCost": 1,
+								"title": "調查『狼群』宣傳單張",
+								"description": "據報『狼群』宣傳單張是在這裡發出的",
+								"imgSrc": "https://i.imgur.com/kVEeDMh.png"
+							},
+							{
+								"apCost": 2,
+								"title": "調查『狼群』宗教",
+								"description": "也許在邪教眾多的貧民區中，會有特別發現？",
+								"imgSrc": "https://i.imgur.com/IQcxzS4.jpg"
+							}
+						]
+					},
+					{
+						"name": "『咖啡館』",
+						"description": "偽裝成咖啡館的情報交易所，在陷入困難時能買到些好情報",
+						"imgSrc": "https://i.imgur.com/Shf5Ut6.jpg",
+						"actions": [
+							{
+								"apCost": 1,
+								"title": "購買情報",
+								"description": "問你想知道的事情，沒情報不收費",
+								"imgSrc": "https://i.imgur.com/GEdZcpi.jpg"
+							},
+							{
+								"apCost": 0,
+								"title": "販賣情報",
+								"description": "有沒什麼勁爆的情報？咖啡館最愛八卦題材了",
+								"imgSrc": "https://i.imgur.com/GEdZcpi.jpg"
+							},
+							{
+								"apCost": 0,
+								"title": "神秘禮品",
+								"description": "對光顧三次的顧客的神秘禮物",
+								"imgSrc": "https://i.imgur.com/kQhqCzy.jpg"
+							}
+						]
+					}
+				]
+			},
+			{
+				"mapObjectId": "cana",
+				"description": "在數年前，被鄰近「眠塔」中湧出的大量天使怪物摧毀後，便維持著廢墟的樣子。無人問津的地點，成為一個適合進行秘密行動的地方，亦因而成為其中一個故事的舞台。",
+				"metadata": {
+					"position": "輾土城東南",
+					"country": "聯邦制限區",
+					"type": "小鎮",
+					"population": "已荒廢"
+				},
+				"imgSrc": "https://i.imgur.com/5wQXZMO.jpg",
+				"landmarks": [
+					{
+						"name": "央城「狼部」營地",
+						"description": "全稱「亞人犯罪對策部狼部」的部隊據點，在『狼群』在迦拿的據點進行調查",
+						"imgSrc": "https://i.imgur.com/LGZPBzX.jpg",
+						"actions": [
+							{
+								"apCost": 0,
+								"title": "查詢據點的狀況",
+								"description": "先預知調查據點的難度，以防浪費時間",
+								"imgSrc": "https://i.imgur.com/UxFgfgL.jpg"
+							},
+							{
+								"apCost": 1,
+								"title": "協助清理倒塌的『狼群』據點",
+								"description": "『狼據』在撤離前破壞了據點，落石導致調查困難",
+								"imgSrc": "https://i.imgur.com/BPVVB2l.jpg"
+							}
+						]
+					},
+					{
+						"name": "『狼群』據點（被破壞）",
+						"description": "前些時候發現的據點。\n由於已被破壞，調查行動大幅受限。(各行動AP消耗+2)",
+						"imgSrc": "https://i.imgur.com/lUshWQ7.jpg",
+						"actions": [
+							{
+								"apCost": 2,
+								"title": "調查儀式房間",
+								"description": "『狼群』進行某種儀式的地方",
+								"imgSrc": "https://i.imgur.com/46SAc7u.jpg"
+							},
+							{
+								"apCost": 3,
+								"title": "調查煉金實驗室",
+								"description": "『狼群』製作魔法物品的地方",
+								"imgSrc": "https://i.imgur.com/RmNnGWY.jpg"
+							},
+							{
+								"apCost": 3,
+								"title": "調查藏書室",
+								"description": "『狼群』收藏古籍的地方",
+								"imgSrc": "https://i.imgur.com/EQn0vhB.jpg"
+							}
+						]
+					},
+					{
+						"name": "東南的礦坑",
+						"description": "某貴族的礦坑，『狼群』需求的賽吾爾人是從這裡買的",
+						"imgSrc": "https://i.imgur.com/eKzhbzt.jpg",
+						"actions": [
+							{
+								"apCost": 1,
+								"title": "與賽吾爾人礦工交談",
+								"description": "礦坑貴族的販人行為未被揭發，賽吾爾人仍不知情",
+								"imgSrc": "https://i.imgur.com/0AkrUwf.jpg"
+							}
+						]
+					}
+				]
+			},
+			{
+				"mapObjectId": "za-ura",
+				"description": "自從新曆開始後才開放的城市，是一座人類城市，過往還有『聖光封印之城』的別稱。\n長年的自我封鎖，使這座城市乏人問津，甚至在世界地圖上沒有標記，只有從從事物流的輾土城人口中得知其存在。",
+				"metadata": {
+					"position": "輾土城以北",
+					"country": "無所屬",
+					"type": "三級城市、人類城市",
+					"population": "約30萬"
+				},
+				"imgSrc": "https://i.imgur.com/PC6hbUy.jpg",
+				"landmarks": [
+					{
+						"name": "外城商業區",
+						"description": "一般的外來者最遠能到達的地方，是賽吾爾城對外交流的區域",
+						"imgSrc": "https://i.imgur.com/EvTW8U5.jpg",
+						"actions": [
+							{
+								"apCost": 0,
+								"title": "被送返故鄉的賽吾爾人",
+								"description": "被『狼群』抓走又得救的賽吾爾人，被輾土城送回了家鄉",
+								"imgSrc": "https://i.imgur.com/0AkrUwf.jpg"
+							},
+							{
+								"apCost": 1,
+								"title": "觀光",
+								"description": "也許會遇到什麼趣事？",
+								"imgSrc": "https://i.imgur.com/yhmsdwN.jpg"
+							},
+							{
+								"apCost": 1,
+								"title": "在冒險者分部消磨時間",
+								"description": "外城區其中一個情報及委託匯集的地方",
+								"imgSrc": "https://i.imgur.com/FWECLtc.jpg"
+							}
+						]
+					}
+				]
+			},
+			{
+				"mapObjectId": "alfheimr",
+				"description": "諾爾斯所屬，精靈之城的一部分，與諾爾斯本土的「亞爾夫海姆」成對守望彼此。高精靈的排外文化嚴重，一般人在裡面不易活動。\n由於有高級的監獄設施，又有「監獄城」的別稱。",
+				"metadata": {
+					"position": "梵亞斯東北",
+					"country": "諾爾斯（梵亞斯聯合）",
+					"type": "次級城市、精靈城市",
+					"population": "難以估計"
+				},
+				"imgSrc": "https://i.imgur.com/WzsGbYH.jpg",
+				"landmarks": [
+					{
+						"name": "商業區",
+						"description": "高精靈最多能容許外來者到達的的地方，往其他地方走容易遭白眼",
+						"imgSrc": "https://i.imgur.com/gkQRDkY.jpg",
+						"actions": [
+							{
+								"apCost": 1,
+								"title": "觀光",
+								"description": "也許會遇到什麼趣事？",
+								"imgSrc": "https://i.imgur.com/yhmsdwN.jpg"
+							},
+							{
+								"apCost": 1,
+								"title": "在冒險者分部消磨時間",
+								"description": "外城區其中一個情報及委託匯集的地方",
+								"imgSrc": "https://i.imgur.com/FWECLtc.jpg"
 							}
 						]
 					}
