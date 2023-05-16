@@ -13,6 +13,7 @@ export type MapObject = {
 	subtitle?: string;
 	level: number;
 	importance: number;
+	imgSrc?: string;
 };
 
 export type MapConnectionPoint = string | [number, number];

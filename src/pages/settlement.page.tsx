@@ -162,13 +162,17 @@ const SettlementsPage = () => {
 			?.map(
 				(action, i) => `
 		[tr]
-		[td align=left valign=center${i % 2 === 1 ? ' bgcolor=#f5f5f5' : ''}]
-		[div][size=3]└ [b][color=#eb3434]${
+		[td align=left valign=center${
+			i % 2 === 1 ? ' bgcolor=#9fcad1' : ' bgcolor=#c1dade'
+		}]
+		[div][size=3][color=#464646]└ [b][color=#eb3434]${
 			action.apCost ? `&#91;${action.apCost}AP&#93;` : ''
-		}[/color][/b] ${action.title}[/size][/div]
+		}[/color][/b] ${action.title}[/color][/size][/div]
 		[div][size=1][color=#636363]　　　　　${action.description}[/color][/size][/div]
 		[/td]
-		[td align=right valign=center${i % 2 === 1 ? ' bgcolor=#f5f5f5' : ''}]
+		[td align=right valign=center${
+			i % 2 === 1 ? ' bgcolor=#9fcad1' : ' bgcolor=#c1dade'
+		}]
 		[img=${action.imgSrc ?? 'https://placehold.co/200x50.png'}]
 		[/td]
 		[/tr]
@@ -208,10 +212,10 @@ const SettlementsPage = () => {
 			?.map(
 				(connection) => `
 		[tr]
-		[td align=left valign=center]
-		[div][size=3]→ [b][color=#eb3434]${
+		[td align=left valign=center bgcolor=#d4c8bc]
+		[div][size=3][color=#464646]→ [b][color=#eb3434]${
 			connection.apCost ? `&#91;${connection.apCost}AP&#93;` : ''
-		}[/color][/b] 前往 [b]${connection.name}[/b][/size][/div]
+		}[/color][/b] 前往 [b]${connection.name}[/b][/color][/size][/div]
 		${
 			connection.remarks
 				? `[div][size=1]　　　　　${connection.remarks}[/size][/div]`

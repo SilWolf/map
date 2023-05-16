@@ -79,12 +79,13 @@
 				},
 				"anchorCoord": {
 					"x": 3082,
-					"y": 2746
+					"y": 2776
 				},
 				"id": "za-ura",
 				"title": "賽吾爾城",
 				"subtitle": "(Za' Ura)",
-				"level": 0
+				"level": 0,
+				"imgSrc": "/images/map-objects/za-ura.png"
 			},
 			{
 				"coord": {

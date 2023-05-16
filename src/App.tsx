@@ -9,6 +9,7 @@ import {
 } from 'react';
 import {
 	CircleMarker,
+	ImageOverlay,
 	LayerGroup,
 	LayerGroupProps,
 	MapContainer,
@@ -153,6 +154,7 @@ type LabelProps = HTMLAttributes<HTMLDivElement> & {
 	showDot?: boolean;
 	level: number;
 	importance?: number;
+	imgSrc?: string;
 };
 
 type WithTooltipProps<T> = T & {
@@ -505,7 +507,14 @@ function App() {
 			{leafletMapObjectEntries.map(([level, leafletMapObjects], i) => (
 				<ExtendedLayerGroup level={parseInt(level)} key={i}>
 					{leafletMapObjects.map(
-						({ rectBounds, anchorCoord, id, anchorXY, ...mapObject }) => (
+						({
+							rectBounds,
+							anchorCoord,
+							id,
+							anchorXY,
+							imgSrc,
+							...mapObject
+						}) => (
 							<React.Fragment key={id}>
 								<Rectangle
 									bounds={rectBounds}
@@ -537,6 +546,7 @@ function App() {
 										/>
 									</Tooltip>
 								</CircleMarker>
+								{imgSrc && <ImageOverlay url={imgSrc} bounds={rectBounds} />}
 							</React.Fragment>
 						)
 					)}
