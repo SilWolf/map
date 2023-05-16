@@ -4,6 +4,7 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import React from 'react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import SettlementsPage from './pages/settlement.page';
 
 const router = createBrowserRouter([
 	{
@@ -13,6 +14,10 @@ const router = createBrowserRouter([
 	{
 		path: '/print',
 		element: <App />,
+	},
+	{
+		path: '/settlement',
+		element: <SettlementsPage />,
 	},
 ]);
 

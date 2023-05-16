@@ -15,8 +15,12 @@ export type MapObject = {
 	importance: number;
 };
 
+export type MapConnectionPoint = string | [number, number];
+
 export type MapConnection = {
-	points: (string | [number, number])[];
+	points?: MapConnectionPoint[];
+	startPoint: MapConnectionPoint;
+	endPoint: MapConnectionPoint;
 	level: number;
 	cost?: number;
 };

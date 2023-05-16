@@ -1,0 +1,30 @@
+{
+	"version": "2023-05-13",
+	"data": {
+		"settlements": [
+			{
+				"mapObjectId": "city-of-wheel",
+				"description": "第一行\n\n第二行",
+				"metadata": {
+					"position": "自由聯邦與梵亞斯交界",
+					"country": "聯邦制限區",
+					"type": "次級城市、多人種",
+					"population": "208萬"
+				},
+				"landmarks": [
+					{
+						"name": "城衛隊辦公室",
+						"description": "為了調查從『狼群』據點取回的各種物件，你們拜訪漢克長官位於輾土城的辦公室。",
+						"actions": [
+							{
+								"apCost": 1,
+								"title": "詢問被捕的『狼群』教徒",
+								"description": "從教徒身上獲取更多『狼群』的資訊。"
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+}

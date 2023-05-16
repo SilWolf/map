@@ -384,15 +384,20 @@ function App() {
 
 		const refinedMapConnections = mapInfo.data.mapConnections.map((item) => {
 			const points: [number, number][] = [];
+			const pendingPoints = [
+				item.startPoint,
+				...(item.points ?? []),
+				item.endPoint,
+			];
 
-			for (let i = 0; i < item.points.length; i++) {
-				if (typeof item.points[i] !== 'string') {
-					points.push(item.points[i] as [number, number]);
+			for (let i = 0; i < pendingPoints.length; i++) {
+				if (typeof pendingPoints[i] !== 'string') {
+					points.push(pendingPoints[i] as [number, number]);
 				}
 
-				if (typeof item.points[i] === 'string') {
+				if (typeof pendingPoints[i] === 'string') {
 					const mapObject = refinedMapObjects.find(
-						({ id }) => id === (item.points[i] as string)
+						({ id }) => id === (pendingPoints[i] as string)
 					);
 
 					if (mapObject) {

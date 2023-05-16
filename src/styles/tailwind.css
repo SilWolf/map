@@ -1,11 +1,5 @@
 @tailwind base;
 
-@layer base {
-	html {
-		font-family: MapLabel, system-ui, sans-serif;
-	}
-}
-
 /* Your own custom base styles */
 
 /* Start purging... */
